@@ -315,11 +315,19 @@
   /* ════════════════════════════════════════
      SLOTS  (slot 0 = host/human, rest = bot)
   ════════════════════════════════════════ */
+  function loadTotals() {
+    try { return JSON.parse(localStorage.getItem('snake_totals') || '{}'); } catch { return {}; }
+  }
+  function saveTotals(totals) {
+    localStorage.setItem('snake_totals', JSON.stringify(totals));
+  }
+
+  const _saved = loadTotals();
   const slots = DEFS.map((d, i) => ({
     ...d,
-    state:     i === 0 ? 'host' : 'bot',
-    code:      null,
-    lastScore: null,
+    state:      i === 0 ? 'host' : 'bot',
+    code:       null,
+    totalScore: _saved[d.id] ?? 0,
   }));
   // Assign codes to non-host slots
   slots.forEach(s => { if (s.state !== 'host') s.code = genCode(); });
@@ -356,7 +364,7 @@
           <span class="code-value">${s.code || ''}</span>
           <span class="slot-keys-hint">Tasten: ${s.keyLabel.map(k=>`<span class="key-chip">${k}</span>`).join('')}</span>
         </div>
-        ${s.lastScore !== null ? `<div class="slot-last-score">Letztes Spiel: <strong>${s.lastScore} Pts</strong></div>` : ''}
+        ${s.totalScore > 0 ? `<div class="slot-last-score">Gesamt: <strong>${s.totalScore} Pts</strong></div>` : ''}
       `;
       container.appendChild(el);
     });
@@ -473,11 +481,16 @@
 
   function goLobby() {
     if (loop) clearInterval(loop);
-    // Persist last scores back into slots
+    // Add game scores to running totals and save
+    const totals = loadTotals();
     players.forEach(p => {
       const slot = slots.find(s => s.id === p.id);
-      if (slot) slot.lastScore = p.score;
+      if (slot && p.score > 0) {
+        slot.totalScore = (slot.totalScore ?? 0) + p.score;
+        totals[p.id] = slot.totalScore;
+      }
     });
+    saveTotals(totals);
     phase = 'lobby';
     document.getElementById('game').style.display  = 'none';
     document.getElementById('lobby').style.display = 'flex';
