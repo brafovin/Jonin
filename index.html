@@ -418,6 +418,8 @@
   /* ════════════════════════════════════════
      FOOD
   ════════════════════════════════════════ */
+  const FRUITS = ['🍎','🍊','🍋','🍇','🍓','🍑','🍒','🫐','🍍','🥝','🍉','🍌'];
+
   function spawnFoods(n) {
     for (let i = 0; i < n; i++) {
       let pos, tries = 0;
@@ -428,6 +430,7 @@
         foods.some(f => f.x === pos.x && f.y === pos.y) ||
         players.some(p => p.alive && p.body.some(s => s.x === pos.x && s.y === pos.y))
       ));
+      pos.emoji = FRUITS[Math.floor(Math.random() * FRUITS.length)];
       foods.push(pos);
     }
   }
@@ -573,16 +576,13 @@
       ctx.beginPath(); ctx.moveTo(0, y*CELL); ctx.lineTo(CW, y*CELL); ctx.stroke();
     }
 
-    // Food
-    ctx.shadowBlur = 12;
+    // Food (fruits)
+    ctx.textAlign    = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = `${CELL - 2}px serif`;
     foods.forEach(f => {
-      ctx.fillStyle   = '#f87171';
-      ctx.shadowColor = '#f87171';
-      ctx.beginPath();
-      ctx.arc(f.x*CELL + CELL/2, f.y*CELL + CELL/2, CELL/2 - 2, 0, Math.PI*2);
-      ctx.fill();
+      ctx.fillText(f.emoji, f.x*CELL + CELL/2, f.y*CELL + CELL/2 + 1);
     });
-    ctx.shadowBlur = 0;
 
     // Snakes
     players.forEach(p => {
