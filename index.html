@@ -132,6 +132,8 @@
     }
     .slot.is-human .slot-kick { display: block; }
     .slot-kick:hover { color: #f87171; }
+    .slot-last-score { font-size: .72rem; color: var(--muted); text-align: center; }
+    .slot-last-score strong { color: var(--c); }
 
     /* Typing indicator */
     #type-bar {
@@ -315,8 +317,9 @@
   ════════════════════════════════════════ */
   const slots = DEFS.map((d, i) => ({
     ...d,
-    state: i === 0 ? 'host' : 'bot',
-    code:  null,
+    state:     i === 0 ? 'host' : 'bot',
+    code:      null,
+    lastScore: null,
   }));
   // Assign codes to non-host slots
   slots.forEach(s => { if (s.state !== 'host') s.code = genCode(); });
@@ -353,6 +356,7 @@
           <span class="code-value">${s.code || ''}</span>
           <span class="slot-keys-hint">Tasten: ${s.keyLabel.map(k=>`<span class="key-chip">${k}</span>`).join('')}</span>
         </div>
+        ${s.lastScore !== null ? `<div class="slot-last-score">Letztes Spiel: <strong>${s.lastScore} Pts</strong></div>` : ''}
       `;
       container.appendChild(el);
     });
@@ -469,6 +473,11 @@
 
   function goLobby() {
     if (loop) clearInterval(loop);
+    // Persist last scores back into slots
+    players.forEach(p => {
+      const slot = slots.find(s => s.id === p.id);
+      if (slot) slot.lastScore = p.score;
+    });
     phase = 'lobby';
     document.getElementById('game').style.display  = 'none';
     document.getElementById('lobby').style.display = 'flex';
