@@ -342,7 +342,7 @@
       const el = document.createElement('div');
       el.className = `slot is-${s.state}`;
       el.id = `slot-${i}`;
-      el.style.setProperty('--c', s.color);
+      el.style.setProperty('--c', DEFS[i].color); // always fixed color from DEFS
 
       const badge = s.state === 'host'  ? '👤 DU'
                   : s.state === 'human' ? '👤 BEREIT'
@@ -447,14 +447,15 @@
   const FRUITS = ['🍎','🍊','🍋','🍇','🍓','🍑','🍒','🫐','🍍','🥝','🍉','🍌'];
 
   function initPlayer(def, type) {
+    const base = DEFS.find(d => d.id === def.id); // always use original colors from DEFS
     const body = [];
     for (let i = 0; i < 4; i++)
-      body.push({ x: def.spawn.x - def.spawn.dx * i, y: def.spawn.y - def.spawn.dy * i });
+      body.push({ x: base.spawn.x - base.spawn.dx * i, y: base.spawn.y - base.spawn.dy * i });
     return {
-      ...def, type,
+      ...base, type,
       body,
-      dir:  { x: def.spawn.dx, y: def.spawn.dy },
-      next: { x: def.spawn.dx, y: def.spawn.dy },
+      dir:  { x: base.spawn.dx, y: base.spawn.dy },
+      next: { x: base.spawn.dx, y: base.spawn.dy },
       score: 0,
       alive: true,
     };
