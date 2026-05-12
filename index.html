@@ -615,7 +615,11 @@
 
   function checkEnd() {
     const alive = players.filter(p => p.alive);
-    if (alive.length === 0 || (players.length > 1 && alive.length <= 1)) {
+    const humansAlive = players.filter(p => p.type === 'human' && p.alive);
+    const allHumans   = players.filter(p => p.type === 'human');
+    // End early if all humans are dead (no point watching bots fight)
+    const humansDead = allHumans.length > 0 && humansAlive.length === 0;
+    if (humansDead || alive.length === 0 || (players.length > 1 && alive.length <= 1)) {
       clearInterval(loop);
       phase = 'over';
       const winner = alive[0];
@@ -624,9 +628,16 @@
         `<span style="color:${p.color}">${i+1}. ${p.name} — ${p.score} Pts ${p.type==='bot'?'🤖':''}</span>`
       ).join('<br>');
       document.getElementById('go-title').textContent =
-        winner ? `${winner.name} GEWINNT!` : 'UNENTSCHIEDEN';
+        humansDead && winner?.type === 'bot' ? 'DU BIST GESTORBEN'
+        : winner ? `${winner.name} GEWINNT!`
+        : 'UNENTSCHIEDEN';
       document.getElementById('go-msg').innerHTML = resultLines;
       document.getElementById('game-overlay').classList.add('show');
+
+      // If only solo human and they died → auto-return to lobby after 2.5s
+      if (humansDead && allHumans.length === 1) {
+        setTimeout(() => { if (phase === 'over') goLobby(); }, 2500);
+      }
     }
   }
 
