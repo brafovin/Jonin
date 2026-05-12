@@ -259,7 +259,7 @@
   ];
 
   /* slot states: 'empty' | 'human' | 'bot' */
-  const slots = DEFS.map(d => ({ ...d, state: 'empty' }));
+  const slots = DEFS.map((d, i) => ({ ...d, state: i === 0 ? 'human' : 'empty' }));
 
   /* ════════════════════════════════════════
      LOBBY
